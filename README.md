@@ -30,3 +30,27 @@ Here are a few itches I'd like to scratch with this tool.
 ## Build
 
 ## Development Setup
+
+### Install Rust
+    
+```zsh
+brew install rustup-init
+rustup-init
+```
+
+### Install cross-compile toolchain
+    
+```zsh
+rustup target add x86_64-unknown-linux-gnu
+rustup target add x86_64-pc-windows-gnu
+rustup target add x86_64-apple-darwin
+cargo install cross
+```
+
+### And that's not all!
+    
+```zsh
+cargo install cargo-binstall    # To download compiled deps
+cargo install cargo-edit        # To add dependencies
+cargo install cargo-watch       # For live reload
+```
