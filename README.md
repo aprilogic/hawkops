@@ -22,12 +22,20 @@ Here are a few itches I'd like to scratch with this tool.
 
 ## Usage
 
-`hawkops [noun-command] [verb-command] [options]`
-`hawkops --help`
-`hawkops [noun-command] --help`
-`hawkops [noun-command] [verb-command] --help`
+```zsh
+hawkops [noun-command] [verb-command] [options]
+hawkops --help
+hawkops [noun-command] --help
+hawkops [noun-command] [verb-command] --help
+```
 
-## Build
+
+## Build and Run
+
+```zsh
+cargo build
+./target/debug/hawkops --help
+```
 
 ## Development Setup
 

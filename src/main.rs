@@ -20,7 +20,9 @@ fn main() {
         .subcommand(
             Command::new("auth")
                 .about("Authentication commands")
-                .subcommand(Command::new("login").about("Log in with your API key")),
+                .subcommand(Command::new("login").about("Log in with your API key"))
+                .subcommand(Command::new("logout").about("Log out of your account"))
+                .subcommand(Command::new("whoami").about("Display information about your account")),
         )
         .get_matches();
 
