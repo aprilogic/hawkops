@@ -37,8 +37,25 @@ fn main() {
                     eprintln!("Error: HAWK_API_KEY not set in environment.");
                 }
             }
+            Some(("logout", _)) => {
+                println!("Logging out...")
+            }
+            Some(("whoami", _)) => {
+                println!("Displaying account information...");
+            }
             _ => println!("Use `hawkops auth login` to log in."),
         },
         _ => println!("Use --help to see available commands."),
     }
 }
+
+// fn fetch_jwt() -> Result<String, reqwest::Error> {
+//     let client = reqwest::Client::new();
+//     let res = client
+//         .get("https://api.stackhawk.com/api/v1/auth/login")
+//         .header("Content-Type", "application/json")
+//         .header("Accept", "application/json")
+//         .header("X-ApiKey", env::var("HAWK_API_KEY").unwrap())
+//         .send()
+//         .text();
+// }
