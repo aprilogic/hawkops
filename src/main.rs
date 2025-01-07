@@ -1,8 +1,9 @@
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use std::env;
-use base64::decode;
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use serde_json;
+use config::Config;
 
 fn main() {
     // Load environment variables from .env
@@ -65,6 +66,7 @@ fn fetch_jwt() -> Result<String, String> {
     json["token"].as_str().map(|s| s.to_string()).ok_or("Token not found".to_string())
 }
 
+// `hawkops auth login` command
 fn ops_auth_login() -> Result<(), String> {
     let jwt = fetch_jwt()?;
     println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
@@ -72,27 +74,15 @@ fn ops_auth_login() -> Result<(), String> {
     Ok(())
 }
 
-fn check_jwt_expiration(jwt: &str) -> Result<(), String> {
-    println!("JWT:\n{}", jwt);
+fn check_jwt_expiration(jwt: &str) {
     let jwt_parts: Vec<&str> = jwt.split('.').collect();
-    let jwt_payload = jwt_parts[1];
-    println!("JWT payload:\n{}", jwt_payload);
-    match decode(jwt_payload) {
-        Ok(decoded_bytes) => {
-            if let Ok(decoded_str) = String::from_utf8(decoded_bytes) {
-                println!("Decoded string: {}", decoded_str);
-            } else {
-                eprintln!("Error: Decoded bytes are not valid UTF-8.");
-            }
-        }
-        Err(e) => eprintln!("Failed to decode Base64: {}", e),
-    }
-    let jwt_payload_decoded = // base64 decode jwt_payload
-        base64::decode(jwt_payload).map_err(|e| e.to_string())?;
-    println!("Decoded JWT payload:\n{}", String::from_utf8(jwt_payload_decoded.clone()).unwrap());
-    let jwt_payload_json: serde_json::Value = serde_json::from_slice(&jwt_payload_decoded).unwrap();
-    let jwt_exp = jwt_payload_json["exp"].as_i64().unwrap();
-    let jwt_exp_date = chrono::NaiveDateTime::from_timestamp(jwt_exp, 0);
-    println!("JWT expiration date: {}", jwt_exp_date);
-    Ok(())
+    let claims = jwt_parts.get(1).unwrap();
+    let claims = format!("{}{}", claims, "=".repeat((4 - claims.len() % 4) % 4));
+    let decoded_claims = URL_SAFE.decode(claims).expect("Failed to decode claims");
+    let claims_str = String::from_utf8(decoded_claims).expect("Failed to convert claims to string");
+    let claims_json: serde_json::Value = serde_json::from_str(&claims_str).unwrap();
+    let exp = claims_json["exp"].as_i64().unwrap();
+    let now = chrono::Utc::now().timestamp();
+    let time_left = exp - now;
+    println!("JWT expires in {} seconds", time_left);
 }
