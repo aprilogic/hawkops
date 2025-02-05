@@ -23,5 +23,8 @@ target/
 .env
 
 # Added by cargo
-
 /target
+
+# Local hawkops configuration file
+/.hawkops
+

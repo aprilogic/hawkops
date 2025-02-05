@@ -1,9 +1,10 @@
+mod config;
+
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use std::env;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use serde_json;
-use config::Config;
 
 fn main() {
     // Load environment variables from .env
@@ -13,44 +14,48 @@ fn main() {
     let matches = Command::new("hawkops")
         .version("0.1.0")
         .author("April Conger <april@econger.com>")
-        .about("CLI for StackHawk platform")
+        .about("A CLI companion to the StackHawk platform")
         .arg(
             Arg::new("verbose")
+                .help("Enables verbose output")
                 .short('v')
                 .long("verbose")
-                .help("Enables verbose output"),
+        )
+        .subcommand(Command::new("init")
+            .about("Initialize API authentication")
         )
         .subcommand(
             Command::new("auth")
                 .about("Authentication commands")
                 .subcommand(Command::new("login").about("Log in with your API key"))
                 .subcommand(Command::new("logout").about("Log out of your account"))
-                .subcommand(Command::new("whoami").about("Display information about your account")),
+                .subcommand(Command::new("whoami").about("Display information about your account"))
         )
         .get_matches();
 
     // Handle subcommands
     match matches.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
-            Some(("login", _)) => {
-                if let Ok(api_key) = env::var("HAWK_API_KEY") {
-                    println!("Logging in with API key: {}", api_key);
-                    ops_auth_login().unwrap();
-                    // TODO: Add authentication logic here
-                } else {
-                    eprintln!("Error: HAWK_API_KEY not set in environment.");
-                }
-            }
-            Some(("logout", _)) => {
-                println!("Logging out...")
-            }
-            Some(("whoami", _)) => {
-                println!("Displaying account information...");
-            }
+            Some(("login", _)) => { ops_auth_login().expect("TODO: panic message") }
+            Some(("logout", _)) => { println!("Logging out...") }
+            Some(("whoami", _)) => { println!("Displaying account information..."); }
             _ => println!("Use `hawkops auth login` to log in."),
         },
         _ => println!("Use --help to see available commands."),
     }
+}
+
+// `hawkops auth login` command
+fn ops_auth_login() -> Result<(), String> {
+    if let Ok(api_key) = env::var("HAWK_API_KEY") {
+        println!("Logging in with API key: {}", api_key);
+        let jwt = fetch_jwt()?;
+        check_jwt_expiration(&jwt);
+        println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
+    } else {
+        eprintln!("Error: HAWK_API_KEY not set in environment.");
+    }
+    Ok(())
 }
 
 fn fetch_jwt() -> Result<String, String> {
@@ -66,14 +71,6 @@ fn fetch_jwt() -> Result<String, String> {
     json["token"].as_str().map(|s| s.to_string()).ok_or("Token not found".to_string())
 }
 
-// `hawkops auth login` command
-fn ops_auth_login() -> Result<(), String> {
-    let jwt = fetch_jwt()?;
-    println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
-    check_jwt_expiration(&jwt);
-    Ok(())
-}
-
 fn check_jwt_expiration(jwt: &str) {
     let jwt_parts: Vec<&str> = jwt.split('.').collect();
     let claims = jwt_parts.get(1).unwrap();
@@ -85,4 +82,16 @@ fn check_jwt_expiration(jwt: &str) {
     let now = chrono::Utc::now().timestamp();
     let time_left = exp - now;
     println!("JWT expires in {} seconds", time_left);
+}
+
+fn _ops_init() -> Result<(), String> {
+    // TODO:
+    // 1. Check for existing config file and prompt user to overwrite
+    // 2. Prompt user for API key
+    // 3. Write API key to config file
+    // 4. Fetch JWT
+    // 5. Write JWT to config file
+    // 6. Check JWT expiration
+    // 7. Print success message - "Initialized hawkops successfully"
+    Ok(())
 }

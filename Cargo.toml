@@ -7,12 +7,15 @@ license = "MIT"
 repository = "https://github.com/aprilogic/hawkops"
 
 [dependencies]
-clap = { version = "4.3", features = ["derive"] } # For CLI argument parsing
-reqwest = { version = "0.11", features = ["json", "blocking"] } # For HTTP requests
+clap = { version = "4.5", features = ["derive"] } # For CLI argument parsing
+reqwest = { version = "0.12", features = ["json", "blocking"] } # For HTTP requests
 serde = { version = "1.0", features = ["derive"] } # For JSON serialization
 dotenv = "0.15" # For reading environment variables
-tokio = { version = "1.0", features = ["full"] }
-serde_json = "1.0.134"
-chrono = "0.4.39"
-base64 = "0.21.7" # Async runtime (needed for reqwest async)
-config = "0.13"
+tokio = { version = "1.43", features = ["full"] }
+serde_json = "1.0"
+chrono = "0.4"
+base64 = "0.22" # Async runtime (needed for reqwest async)
+config = "0.15"
+path = "0.8"
+dirs = "6.0.0"
+time = "0.3.37"
