@@ -5,10 +5,13 @@ use dotenv::dotenv;
 use std::env;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use serde_json;
+use crate::config::load_config;
 
 fn main() {
     // Load environment variables from .env
     dotenv().ok();
+    let hawkops_config = load_config();
+    println!("{:?}", hawkops_config);
 
     // Set up CLI with Clap
     let matches = Command::new("hawkops")
