@@ -1,9 +1,9 @@
 mod config;
 
 use clap::{Arg, Command};
-use dotenv::dotenv;
-use std::env;
-use ::config::Config;
+// use dotenv::dotenv;
+// use std::env;
+// use ::config::Config;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use serde_json;
 use crate::config::{load_config, HawkOpsConfig};
@@ -11,8 +11,8 @@ use crate::config::{load_config, HawkOpsConfig};
 fn main() {
     // Load environment variables from .env
     // dotenv().ok();
-    let hawkops_config = load_config();
-    println!("{:?}", hawkops_config);
+    let config = load_config();
+    println!("{:?}", config);
 
     // Set up CLI with Clap
     let matches = Command::new("hawkops")
@@ -40,7 +40,14 @@ fn main() {
     // Handle subcommands
     match matches.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
-            Some(("login", _)) => { ops_auth_login(hawkops_config.expect("REASON")).expect("TODO: panic message") }
+            Some(("login", _)) => {
+                match config.unwrap().api_key {
+                    Some(api_key) => {
+                        ops_auth_login(api_key).expect("Call to ops_auth_login failed")
+                    }
+                    None => {eprintln!("Error, API key not found")}
+                }
+            }
             Some(("logout", _)) => { println!("Logging out...") }
             Some(("whoami", _)) => { println!("Displaying account information..."); }
             _ => println!("Use `hawkops auth login` to log in."),
@@ -50,27 +57,22 @@ fn main() {
 }
 
 // `hawkops auth login` command
-fn ops_auth_login(config: HawkOpsConfig) -> Result<(), String> {
-    if let Some(api_key) = config.api_key {
-        println!("Logging in with API key: {}", api_key);
-        let jwt = fetch_jwt()?;
-        check_jwt_expiration(&jwt);
-        println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
-    } else {
-        eprintln!("Error: HAWK_API_KEY not set in environment.");
-    }
+fn ops_auth_login(api_key: String) -> Result<(), String> {
+    println!("Logging in with API key: {}", api_key);
+    let jwt = fetch_jwt(api_key)?;
+    check_jwt_expiration(&jwt);
+    println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
     Ok(())
 }
 
-fn fetch_jwt() -> Result<String, String> {
+fn fetch_jwt(api_key: String) -> Result<String, String> {
     let client = reqwest::blocking::Client::new();
     let res = client
         .get("https://api.stackhawk.com/api/v1/auth/login")
         .header("Accept", "application/json")
-        .header("X-ApiKey", env::var("HAWK_API_KEY").unwrap())
+        .header("X-ApiKey", api_key)
         .send()
         .map_err(|e| e.to_string())?;
-
     let json: serde_json::Value = res.json().map_err(|e| e.to_string())?;
     json["token"].as_str().map(|s| s.to_string()).ok_or("Token not found".to_string())
 }
