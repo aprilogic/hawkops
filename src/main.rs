@@ -3,13 +3,14 @@ mod config;
 use clap::{Arg, Command};
 use dotenv::dotenv;
 use std::env;
+use ::config::Config;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use serde_json;
-use crate::config::load_config;
+use crate::config::{load_config, HawkOpsConfig};
 
 fn main() {
     // Load environment variables from .env
-    dotenv().ok();
+    // dotenv().ok();
     let hawkops_config = load_config();
     println!("{:?}", hawkops_config);
 
@@ -39,7 +40,7 @@ fn main() {
     // Handle subcommands
     match matches.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
-            Some(("login", _)) => { ops_auth_login().expect("TODO: panic message") }
+            Some(("login", _)) => { ops_auth_login(hawkops_config.expect("REASON")).expect("TODO: panic message") }
             Some(("logout", _)) => { println!("Logging out...") }
             Some(("whoami", _)) => { println!("Displaying account information..."); }
             _ => println!("Use `hawkops auth login` to log in."),
@@ -49,8 +50,8 @@ fn main() {
 }
 
 // `hawkops auth login` command
-fn ops_auth_login() -> Result<(), String> {
-    if let Ok(api_key) = env::var("HAWK_API_KEY") {
+fn ops_auth_login(config: HawkOpsConfig) -> Result<(), String> {
+    if let Some(api_key) = config.api_key {
         println!("Logging in with API key: {}", api_key);
         let jwt = fetch_jwt()?;
         check_jwt_expiration(&jwt);
