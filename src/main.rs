@@ -9,8 +9,6 @@ use serde_json;
 use crate::config::{load_config, HawkOpsConfig};
 
 fn main() {
-    // Load environment variables from .env
-    // dotenv().ok();
     let config = load_config();
     println!("{:?}", config);
 
@@ -43,7 +41,8 @@ fn main() {
             Some(("login", _)) => {
                 match config.unwrap().api_key {
                     Some(api_key) => {
-                        ops_auth_login(api_key).expect("Call to ops_auth_login failed")
+                        ops_auth_login(api_key).expect("Call to ops_auth_login failed");
+                        println!("Login successful");
                     }
                     None => {eprintln!("Error, API key not found")}
                 }
