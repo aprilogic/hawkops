@@ -20,7 +20,10 @@ pub fn load_config() -> Result<HawkOpsConfig, ConfigError> {
     let config_path = home_dir.join(".hawkops/config.yml");
     println!("config_path set to {:?}", config_path);
     let builder = Config::builder()
-        .add_source(File::from(config_path).required(false).format(config::FileFormat::Yaml))
+        .add_source(File::from(config_path)
+            .required(false)
+            .format(config::FileFormat::Yaml)
+        )
         .add_source(Environment::with_prefix("HAWK").separator("_"));
     println!("builder set to {:?}", builder);
     let config = builder.build()?;

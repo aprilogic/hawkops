@@ -6,6 +6,7 @@ description = "A CLI tool for interacting with the StackHawk platform API."
 license = "MIT"
 repository = "https://github.com/aprilogic/hawkops"
 
+
 [dependencies]
 clap = { version = "4", features = ["derive"] } # For CLI argument parsing
 reqwest = { version = "0", features = ["json", "blocking"] } # For HTTP requests
