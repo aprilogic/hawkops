@@ -3,15 +3,15 @@ use serde::Deserialize;
 use config;
 use config::{Config, ConfigError, Environment, File};
 use std::path::PathBuf;
+use config::Case::Upper;
 use dirs;
 
 #[derive(Deserialize, Debug)]
-#[serde(rename_all = "kebab-case")]
 pub struct HawkOpsConfig {
     pub api_key: Option<String>,
-    pub org_id: Option<String>,
-    pub log_level: Option<String>,
-    pub verbosity: Option<u8>,
+    pub _org_id: Option<String>,
+    pub _log_level: Option<String>,
+    pub _verbosity: Option<u8>,
 }
 
 pub fn load_config() -> Result<HawkOpsConfig, ConfigError> {
@@ -24,9 +24,10 @@ pub fn load_config() -> Result<HawkOpsConfig, ConfigError> {
             .required(false)
             .format(config::FileFormat::Yaml)
         )
-        .add_source(Environment::with_prefix("HAWK").separator("_"));
+        .add_source(Environment::with_prefix("HAWK_").convert_case(Upper));
     println!("builder set to {:?}", builder);
     let config = builder.build()?;
     println!("config set to {:?}", config);
     config.try_deserialize::<HawkOpsConfig>()
 }
+
