@@ -1,6 +1,6 @@
 # 🪽 HawkOps
 
-An unofficial CLI companion to StackHawk
+An unofficial StackHawk companion CLI
 
 ## Purpose
 
@@ -16,9 +16,16 @@ Here are a few itches I'd like to scratch with this tool.
 4. List latest scans for an application
 5. List users and their teams
 6. Query apps for scan configs with particular parameters
-7. Create other reports as needed
-8. Model API queries to support StackHawk prospects and customers
-9. Create a query language to support more complex queries
+8. Create other reports as needed
+9. Model API queries to support StackHawk prospects and customers
+10. Create a query language to support more complex queries
+
+Maybe outside of the StackHawk API...
+
+1. Detect SSL MitM proxy and extract SH-ready PEM
+2. Prune a HAR file for a specific host
+3. Analyze HAR for unique hosts
+4. Prune OAS files - include/exclude
 
 ## Usage
 
