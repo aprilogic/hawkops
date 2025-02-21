@@ -1,14 +1,19 @@
 use std::path::PathBuf;
 // use base64::engine::general_purpose::URL_SAFE;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+// use config::File;
+use std::fs::File;
+use std::io::Write;
+// use config::File;
 use dirs;
-
 
 // `hawkops auth login` command
 pub fn ops_auth_login(api_key: String) -> Result<(), String> {
+
     println!("Logging in with API key: {}", api_key);
     let jwt = fetch_jwt(api_key)?;
     check_jwt_expiration(&jwt);
+    write_jwt(&jwt);
     println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
     Ok(())
 }
@@ -50,9 +55,16 @@ fn _ops_init() -> Result<(), String> {
     Ok(())
 }
 
-fn _write_jwt(_jwt: &str) {
-    let _jwt_file = dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from(".")
-        .join(".hawkops/cache/token.json"));
-
+fn write_jwt(jwt: &str) {
+    let jwt_file_path = dirs::home_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(".hawkops/.token");
+    let jwt_file = File::create(jwt_file_path);
+    jwt_file
+        .expect("file should have been present")
+        .write_all(jwt.as_ref())
+        .expect("file should have been writable");
+    println!("Wrote the JWT to a fie.")
 }
+
+
