@@ -1,6 +1,6 @@
-# 🪽 HawkOps
+# HawkOps🪽
 
-An unofficial StackHawk companion CLI
+A StackHawk companion CLI
 
 ## Purpose
 
