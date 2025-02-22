@@ -1,18 +1,13 @@
 mod config;
 mod auth;
-
 use clap::{Arg, Command};
-// use dotenv::dotenv;
-// use std::env;
-// use ::config::Config;
-
-// use serde_json;
 use crate::config::{load_config};
-use crate::auth::ops_auth_login;
+use crate::auth::{ops_auth_login, ops_auth_whoami};
 
 fn main() {
     let config = load_config();
     println!("{:?}", config);
+    let api_key = config.unwrap().api_key.unwrap();
 
     // Set up CLI with Clap
     let matches = Command::new("hawkops")
@@ -41,18 +36,19 @@ fn main() {
     match matches.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
             Some(("login", _)) => {
-                match config.unwrap().api_key {
-                    Some(api_key) => {
-                        ops_auth_login(api_key).expect("Call to ops_auth_login failed");
-                        println!("Login successful");
-                    }
-                    None => {eprintln!("Error, API key not found")}
-                }
+                ops_auth_login(api_key).expect("Call to ops_auth_login failed");
+                println!("Login successful");
             }
+            None => { eprintln!("Error, API key not found")}
             Some(("logout", _)) => { println!("Logging out...") }
-            Some(("whoami", _)) => { println!("Displaying account information..."); }
+            Some(("whoami", _)) => {
+                println!("Displaying account information...");
+                ops_auth_whoami(api_key)
+            }
             _ => println!("Use `hawkops auth login` to log in."),
         },
         _ => println!("Use --help to see available commands."),
     }
 }
+
+

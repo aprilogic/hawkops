@@ -24,7 +24,7 @@ Maybe outside of the StackHawk API...
 
 1. Detect SSL MitM proxy and extract SH-ready PEM
 2. Prune a HAR file for a specific host
-3. Analyze HAR for unique hosts
+3. Analyze HAR for unique hosts / app architecture
 4. Prune OAS files - include/exclude
 
 ## Usage

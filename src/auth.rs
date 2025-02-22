@@ -67,4 +67,13 @@ fn write_jwt(jwt: &str) {
     println!("Wrote the JWT to a fie.")
 }
 
-
+pub fn ops_auth_whoami(api_key: String) {
+    let client = reqwest::blocking::Client::new();
+    let bearer_token = "Bearer iMaBeArErToKeN!";
+    let res = client
+        .get("https://api.stackhawk.com/api/v1/user")
+        .header("Accept", "application/json")
+        .header("Authentication", bearer_token )
+        .send()
+        .map_err(|e| e.to_string());
+}
