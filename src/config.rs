@@ -24,7 +24,7 @@ pub fn load_config() -> Result<HawkOpsConfig, ConfigError> {
             .required(false)
             .format(config::FileFormat::Yaml)
         )
-        .add_source(Environment::with_prefix("HAWK_").convert_case(Upper));
+        .add_source(Environment::with_prefix("HOPS_").convert_case(Upper));
     println!("builder set to {:?}", builder);
     let config = builder.build()?;
     println!("config set to {:?}", config);
