@@ -36,7 +36,7 @@ fn main() {
     match matches.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
             Some(("login", _)) => {
-                ops_auth_login(api_key).expect("Call to ops_auth_login failed");
+                ops_auth_login(api_key);
                 println!("Login successful");
             }
             None => { eprintln!("Error, API key not found")}

@@ -1,30 +1,25 @@
 use std::path::PathBuf;
-// use base64::engine::general_purpose::URL_SAFE;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-// use config::File;
 use std::fs::File;
 use std::io::{Read, Write};
-// use std::sync::Condvar;
-// use clap::builder::Str;
-use config::ValueKind::String;
-// use config::File;
+// use config;
 use dirs;
+use serde_json::from_str;
 // use serde::de::Unexpected::Str;
 use crate::config::HawkOpsConfig;
 
 // `hawkops auth login` command
-pub fn ops_auth_login(api_key: String) -> Result<(), String> {
+pub fn ops_auth_login(api_key: String) {
 
     println!("Logging in with API key: {}", api_key);
-    let jwt = fetch_jwt(api_key);
+    let jwt = String::from(request_jwt(api_key));
     check_jwt_expiration(&jwt);
     write_jwt(&jwt);
     println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
-    Ok(())
 }
 
 
-fn get_api_key(config: HawkOpsConfig) -> String {
+fn _get_api_key(config: HawkOpsConfig) -> String {
     let api_key = match config.api_key {
         Some(api_key) => api_key,
         None => {
@@ -39,41 +34,26 @@ fn get_api_key(config: HawkOpsConfig) -> String {
 fn get_valid_jwt(api_key: String) -> String {
     let jwt = match read_jwt() {
         Some(jwt) => jwt,
-        None => fetch_jwt(api_key)
+        None => request_jwt(api_key)
     };
     jwt
 }
 
-fn fetch_jwt(api_key: String) -> String {
+fn request_jwt(api_key: String) -> String {
     let client = reqwest::blocking::Client::new();
     let response = client
         .get("https://api.stackhawk.com/api/v1/auth/login")
         .header("Accept", "application/json")
         .header("X-ApiKey", api_key)
-        .send();
+        .send()
+        .expect("Failed to send request.");
         // .map_err(|e| e.to_string())?;
-    let json_response = match response {
-        Ok(response_body) => response_body.json(),
-        Err(e) => {
-            eprintln!("Error: {e}");
-            std::process::exit(1)
-        }
-    };
-    let jwt: String = match json_response {
-        Ok(response) => {
-            match json_response["token"] {
-                Ok(jwt) => jwt,
-                Err(e) => {
-                    eprintln!("Error: {e}");
-                    std::process::exit(1)
-                }
-            }
-        },
-        Err(e) => {
-            eprintln!("Error: {e}");
-            std::process::exit(1)
-        }
-    };
+    let json_response: serde_json::Value = response.json()
+        .expect("Failed to parse JSON response");
+    let jwt = json_response["token"]
+        .as_str()
+        .expect("Token not found in response")
+        .to_string();
     jwt
 }
 
@@ -88,8 +68,8 @@ fn check_jwt_expiration(jwt: &str) {
     let claims = jwt_parts.get(1).unwrap();
     let claims = format!("{}{}", claims, "=".repeat((4 - claims.len() % 4) % 4));
     let decoded_claims = URL_SAFE.decode(claims).expect("Failed to decode claims");
-    let claims_str = std::string::String::from_utf8(decoded_claims).expect("Failed to convert claims to string");
-    let claims_json: serde_json::Value = serde_json::from_str(&claims_str).unwrap();
+    let claims_str = String::from_utf8(decoded_claims).expect("Failed to convert claims to string");
+    let claims_json: serde_json::Value = from_str(&claims_str).unwrap();
     let exp = claims_json["exp"].as_i64().unwrap();
     let now = chrono::Utc::now().timestamp();
     let time_left = exp - now;
@@ -125,7 +105,7 @@ fn read_jwt() -> Option<String> {
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".hawkops/.token");
     let mut jwt_file = File::open(jwt_file_path).ok()?;
-    let mut jwt_file_contents = std::string::String::new();
+    let mut jwt_file_contents = String::new();
         jwt_file.read_to_string(&mut jwt_file_contents).ok()?;
     //TODO: check to make sure this is a valid JWT string
     let jwt = jwt_file_contents;
@@ -133,12 +113,18 @@ fn read_jwt() -> Option<String> {
 }
 
 pub fn ops_auth_whoami(api_key: String) {
-    let client = reqwest::blocking::Client::new();
-    let bearer_token = "Bearer iMaBeArErToKeN!";
-    let res = client
+    let jwt = get_valid_jwt(api_key);
+    let bearer_token = format!("Bearer {jwt}");
+    let api_client = reqwest::blocking::Client::new();
+    let api_response = api_client
         .get("https://api.stackhawk.com/api/v1/user")
         .header("Accept", "application/json")
         .header("Authentication", bearer_token )
         .send()
-        .map_err(|e| e.to_string());
+        .expect("Failed to send request.");
+    println!("Whoami response?\n{api_response:?}");
+    // .map_err(|e| e.to_string())?;
+    let json_response: serde_json::Value = api_response.json()
+        .expect("Failed to parse JSON response");
+    println!("Whoami?\n{json_response:?}")
 }
