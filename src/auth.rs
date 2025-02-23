@@ -2,20 +2,19 @@ use std::path::PathBuf;
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use std::fs::File;
 use std::io::{Read, Write};
-// use config;
 use dirs;
 use serde_json::from_str;
-// use serde::de::Unexpected::Str;
 use crate::config::HawkOpsConfig;
 
 // `hawkops auth login` command
 pub fn ops_auth_login(api_key: String) {
-
-    println!("Logging in with API key: {}", api_key);
+    // println!("Logging in with API key: {}", api_key);
+    println!("Logging in...");
     let jwt = String::from(request_jwt(api_key));
     check_jwt_expiration(&jwt);
     write_jwt(&jwt);
-    println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
+    println!("Logged in successfully.");
+    // println!("Logged in successfully. Retrieved JWT:\n{}", jwt);
 }
 
 
@@ -119,12 +118,18 @@ pub fn ops_auth_whoami(api_key: String) {
     let api_response = api_client
         .get("https://api.stackhawk.com/api/v1/user")
         .header("Accept", "application/json")
-        .header("Authentication", bearer_token )
+        .header("Authorization", bearer_token )
         .send()
         .expect("Failed to send request.");
-    println!("Whoami response?\n{api_response:?}");
-    // .map_err(|e| e.to_string())?;
+    // println!("Whoami response?\n{api_response:?}");
     let json_response: serde_json::Value = api_response.json()
         .expect("Failed to parse JSON response");
-    println!("Whoami?\n{json_response:?}")
+    let full_name: String = json_response["user"]["external"]["fullName"].to_string()
+        .strip_prefix("\"").expect("ouch!")
+        .strip_suffix("\"").expect("oof!").to_string();
+    let email: String = json_response["user"]["external"]["email"].to_string()
+        .strip_prefix("\"").expect("yeesh!")
+        .strip_suffix("\"").expect("argh!").to_string();
+    println!("{full_name} <{email}>");
+    // println!("Whoami?\n{json_response:?}")
 }

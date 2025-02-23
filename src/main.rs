@@ -1,12 +1,12 @@
 mod config;
 mod auth;
-use clap::{Arg, Command};
+use clap::{Arg, ArgMatches, Command};
 use crate::config::{load_config};
 use crate::auth::{ops_auth_login, ops_auth_whoami};
 
 fn main() {
     let config = load_config();
-    println!("{:?}", config);
+    // println!("{:?}", config);
     let api_key = config.unwrap().api_key.unwrap();
 
     // Set up CLI with Clap
@@ -40,13 +40,10 @@ fn main() {
                 println!("Login successful");
             }
             None => { eprintln!("Error, API key not found")}
-            Some(("logout", _)) => { println!("Logging out...") }
-            Some(("whoami", _)) => {
-                println!("Displaying account information...");
-                ops_auth_whoami(api_key)
-            }
+            Some(("logout", _)) => {}
+            Some(("whoami", _)) => ops_auth_whoami(api_key),
             _ => println!("Use `hawkops auth login` to log in."),
-        },
+        }
         _ => println!("Use --help to see available commands."),
     }
 }
