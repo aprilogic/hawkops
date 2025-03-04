@@ -1,16 +1,17 @@
 mod config;
+mod auth_deprecate;
 mod auth;
+
 use clap::{Arg, ArgMatches, Command};
 use crate::config::{load_config};
-use crate::auth::{ops_auth_login, ops_auth_whoami};
+use crate::auth_deprecate::{ops_auth_login, ops_auth_whoami};
 
 fn main() {
     let config = load_config();
-    // println!("{:?}", config);
     let api_key = config.unwrap().api_key.unwrap();
+    // let api_key = config.unwrap().api_key;
 
-    // Set up CLI with Clap
-    let matches = Command::new("hawkops")
+    let hawkops = Command::new("hawkops")
         .version("0.1.0")
         .author("April Conger <april@econger.com>")
         .about("A CLI companion to the StackHawk platform")
@@ -33,16 +34,13 @@ fn main() {
         .get_matches();
 
     // Handle subcommands
-    match matches.subcommand() {
+    match hawkops.subcommand() {
         Some(("auth", auth_matches)) => match auth_matches.subcommand() {
-            Some(("login", _)) => {
-                ops_auth_login(api_key);
-                println!("Login successful");
-            }
             None => { eprintln!("Error, API key not found")}
-            Some(("logout", _)) => {}
+            Some(("login", _)) => ops_auth_login(api_key),
+            Some(("logout", _)) => {},
             Some(("whoami", _)) => ops_auth_whoami(api_key),
-            _ => println!("Use `hawkops auth login` to log in."),
+            _ => println!("Use `hawkops auth login` to log in.")
         }
         _ => println!("Use --help to see available commands."),
     }
