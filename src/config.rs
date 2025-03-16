@@ -1,14 +1,10 @@
-use serde::Deserialize;
-use config;
-use config::{Config, ConfigError, Environment, File};
-use std::path::PathBuf;
-use config::Case::Upper;
-use dirs;
 use crate::error::{HawkOpsError, HawkOpsResult};
+use config::{Config, Environment, File};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HawkOpsConfig {
     #[serde(default)]
     pub api: ApiConfig,
@@ -18,7 +14,7 @@ pub struct HawkOpsConfig {
     pub logging: LoggingConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiConfig {
     #[serde(default = "default_api_url")]
     pub base_url: String,
@@ -27,7 +23,7 @@ pub struct ApiConfig {
     pub timeout_seconds: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthConfig {
     pub access_token: Option<String>,
     pub refresh_token: Option<String>,
@@ -35,7 +31,7 @@ pub struct AuthConfig {
     pub auto_refresh: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoggingConfig {
     #[serde(default = "default_log_level")]
     pub level: String,
@@ -103,7 +99,8 @@ impl HawkOpsConfig {
         let mut builder = Config::builder();
 
         // Load default config
-        builder = builder.add_source(Config::try_from(&Self::default())?);
+        builder = builder.add_source(Config::try_from(&Self::default())
+            .map_err(|e| HawkOpsError::ConfigError(e.to_string()))?);
 
         // Load config file if it exists
         if config_path.exists() {

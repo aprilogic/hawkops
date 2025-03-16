@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::RwLock;
 use std::sync::Arc;
+use base64::Engine;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthResponse {
     access_token: String,
     refresh_token: Option<String>,
@@ -128,7 +129,8 @@ impl AuthManager {
             return true;
         }
 
-        let payload = base64::decode_config(parts[1], base64::URL_SAFE_NO_PAD)
+        let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode(parts[1].as_bytes())
             .ok()
             .and_then(|bytes| String::from_utf8(bytes).ok())
             .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok());

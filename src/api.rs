@@ -1,7 +1,7 @@
 use crate::error::{HawkOpsError, HawkOpsResult};
 use crate::auth::AuthManager;
 use reqwest::{Client, StatusCode};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
@@ -122,7 +122,7 @@ impl ApiClient {
 }
 
 // API Models
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Application {
     pub id: String,
     pub name: String,
@@ -131,7 +131,7 @@ pub struct Application {
     pub updated_at: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scan {
     pub id: String,
     pub application_id: String,
@@ -141,14 +141,14 @@ pub struct Scan {
     pub findings_count: Option<i32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Team {
     pub id: String,
     pub name: String,
     pub organization_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
     pub email: String,
