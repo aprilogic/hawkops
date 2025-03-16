@@ -5,16 +5,52 @@ edition = "2021"
 description = "A CLI tool for interacting with the StackHawk platform API."
 license = "MIT"
 repository = "https://github.com/aprilogic/hawkops"
-
+authors = ["April Conger <april@econger.com>"]
+readme = "README.md"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] } # For CLI argument parsing
-reqwest = { version = "0", features = ["json", "blocking"] } # For HTTP requests
-serde = { version = "1", features = ["derive"] } # For JSON serialization
-dotenv = "0" # For reading environment variables
-serde_json = "1"
-chrono = "0"
-base64 = "0" # Async runtime (needed for reqwest async)
-config = "0"
-dirs = "6"
-anyhow = "1" # Catch all kinds of error
+# CLI Framework
+clap = { version = "4.5", features = ["derive", "env"] }
+clap_complete = "4.5"  # Shell completions
+
+# Error Handling
+thiserror = "1.0"     # Error type derivation
+anyhow = "1.0"        # Error context and propagation
+miette = { version = "7.1", features = ["fancy"] }  # Error reporting
+
+# HTTP Client
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+tokio = { version = "1.36", features = ["full"] }  # Async runtime
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"          # For TOML config files
+yaml-rust = "0.4"     # For YAML parsing
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Configuration
+config = { version = "0.14", features = ["yaml"] }
+directories = "5.0"   # XDG base directories support
+dotenv = "0.15"
+
+# Logging and diagnostics
+tracing = "0.1"       # Logging framework
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Utilities
+base64 = "0.21"
+url = "2.5"           # URL parsing and manipulation
+dialoguer = "0.11"    # Interactive CLI dialogs
+indicatif = "0.17"    # Progress bars
+console = "0.15"      # Terminal colors and styling
+openssl = { version = "0.10", features = ["vendored"] }  # SSL/TLS support
+
+[dev-dependencies]
+assert_cmd = "2.0"    # CLI testing
+predicates = "3.0"    # Test assertions
+tempfile = "3.10"     # Temporary file handling in tests
+mockito = "1.2"       # HTTP mocking
+tokio-test = "0.4"    # Async testing utilities
