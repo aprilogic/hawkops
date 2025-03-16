@@ -2,8 +2,8 @@ mod config;
 mod auth_deprecate;
 mod auth;
 
-use clap::{Arg, ArgMatches, Command};
-use crate::config::{load_config};
+use clap::{Arg, Command};
+use crate::config::load_config;
 use crate::auth_deprecate::{ops_auth_login, ops_auth_whoami};
 
 fn main() {
