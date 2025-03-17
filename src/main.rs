@@ -44,11 +44,19 @@ async fn main() -> HawkOpsResult<()> {
 
         Commands::Apps { org_id } => {
             let endpoint = if let Some(id) = org_id {
-                format!("{}/api/v1/orgs/{}/applications", config.api.base_url, id)
+                format!("{}/api/v2/org/{}/apps", config.api.base_url, id)
             } else {
-                format!("{}/api/v1/applications", config.api.base_url)
+                // If no org_id is provided, we need to first get the user's default org
+                let user_endpoint = format!("{}/api/v1/user", config.api.base_url);
+                let user: serde_json::Value = api_client.get(&user_endpoint).await?;
+                let default_org = user["defaultOrganization"]["id"]
+                    .as_str()
+                    .ok_or_else(|| HawkOpsError::ApiError("Failed to get default organization".to_string()))?;
+                format!("{}/api/v2/org/{}/apps", config.api.base_url, default_org)
             };
 
+            // Add pagination parameters
+            let endpoint = format!("{}?pageSize=100&pageToken=0", endpoint);
             let apps: Vec<api::Application> = api_client.get(&endpoint).await?;
             for app in apps {
                 info!("App: {} ({})", app.name, app.id);

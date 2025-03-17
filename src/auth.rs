@@ -9,8 +9,10 @@ use base64::Engine;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthResponse {
-    access_token: String,
+    token: String,
+    #[serde(default)]
     refresh_token: Option<String>,
+    #[serde(default)]
     expires_in: Option<u64>,
 }
 
@@ -61,9 +63,9 @@ impl AuthManager {
             // Update config with new tokens
             drop(config); // Release the read lock
             let mut config = self.config.write().await;
-            config.update_auth_tokens(auth_response.access_token.clone(), auth_response.refresh_token)?;
+            config.update_auth_tokens(auth_response.token.clone(), auth_response.refresh_token)?;
 
-            Ok(auth_response.access_token)
+            Ok(auth_response.token)
         } else {
             Err(HawkOpsError::AuthError("API key not found in configuration".to_string()))
         }
@@ -117,9 +119,9 @@ impl AuthManager {
         // Update config with new tokens
         drop(config);
         let mut config = self.config.write().await;
-        config.update_auth_tokens(auth_response.access_token.clone(), auth_response.refresh_token)?;
+        config.update_auth_tokens(auth_response.token.clone(), auth_response.refresh_token)?;
 
-        Ok(auth_response.access_token)
+        Ok(auth_response.token)
     }
 
     fn is_token_expired(token: &str) -> bool {
